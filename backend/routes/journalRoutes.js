@@ -14,4 +14,14 @@ router.post('/', async (req, res) => {
   }
 });
 
+// GET all journals
+router.get('/', async (req, res) => {
+  try {
+    const journals = await Journal.find().sort({ createdAt: -1 });
+    res.json(journals);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch journals' });
+  }
+});
+
 module.exports = router;
