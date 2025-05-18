@@ -24,4 +24,19 @@ router.get('/', async (req, res) => {
   }
 });
 
+// PUT to update a journal
+router.put('/:id', async (req, res) => {
+  try {
+    const { title, content, mood, tags, isDraft } = req.body;
+    const updated = await Journal.findByIdAndUpdate(
+      req.params.id,
+      { title, content, mood, tags, isDraft },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: 'Failed to update journal entry' });
+  }
+});
+
 module.exports = router;
