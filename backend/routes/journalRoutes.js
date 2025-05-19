@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Journal = require('../models/Journal');
+const verifyToken = require('../middleware/verifyToken');
 
 // POST a new journal
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
   try {
     const { title, content, mood, tags, isDraft } = req.body;
     const newEntry = new Journal({ title, content, mood, tags, isDraft });
@@ -25,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // PUT to update a journal
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { title, content, mood, tags, isDraft } = req.body;
     const updated = await Journal.findByIdAndUpdate(
@@ -36,6 +37,16 @@ router.put('/:id', async (req, res) => {
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: 'Failed to update journal entry' });
+  }
+});
+
+// DELETE a journal
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    await Journal.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Deleted' });
+  } catch (err) {
+    res.status(400).json({ error: 'Delete failed' });
   }
 });
 
