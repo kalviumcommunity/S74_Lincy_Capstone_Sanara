@@ -70,3 +70,8 @@ Sanara is a full-stack mental wellness platform designed to empower users to man
 # *Lincy R*  
 ### *Squad 74*
 ### *Capstone Project Sanara – 2025*
+
+##[Backend deployment Link](https://s74-lincy-capstone-sanara-1.onrender.com)
+
+
+
