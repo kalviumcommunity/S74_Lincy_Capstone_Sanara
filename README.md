@@ -73,5 +73,7 @@ Sanara is a full-stack mental wellness platform designed to empower users to man
 
 ##[Backend deployment Link](https://s74-lincy-capstone-sanara-1.onrender.com)
 
+##[Frontend deployment Link](https://chimerical-heliotrope-41b7e3.netlify.app/)
+
 
 
