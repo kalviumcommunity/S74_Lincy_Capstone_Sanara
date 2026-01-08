@@ -1,79 +1,181 @@
 # 🌱 Sanara  
 *Grow Through What You Go Through.*
 
----
-
-## 📌 Project Title  
-**Sanara – Mental Wellness Web Application**
+Sanara is a private journaling and emotional insight application that helps users reflect on **patterns in their emotions over time**.  
+Instead of giving advice or acting as therapy, Sanara focuses on **making emotional trends visible** through structured journaling and clear summaries.
 
 ---
 
-## 📖 Project Overview  
-Sanara is a full-stack mental wellness platform designed to empower users to manage their emotional and psychological wellbeing. The application provides tools for daily mood tracking, private journaling, wellness challenges, and a supportive community space. Sanara aims to make mental health support accessible, private, and engaging through a clean and responsive interface.
+## 📌 Overview
+
+Sanara is built for people who journal or track their moods but find it hard to understand what their entries mean collectively.
+
+Users log structured journal entries with mood, energy, emotional tags, and context. The system processes these entries and presents **concise emotional insights**, helping users step back and reflect without judgment or intervention.
 
 ---
 
-## 💡 Key Features  
-- 🧠 **Mood Tracker:** Log moods and visualize emotional trends over time.  
-- 📔 **Daily Journal:** Secure, timestamped journal entries for self-reflection.  
-- 💪 **Daily Challenges:** Simple, guided tasks to foster positive mental health habits.  
-- 🗣️ **Community Space:** Connect anonymously with peers for support and discussion.  
-- 🔐 **Authentication:** Secure sign-up and login using JWT and bcrypt.  
-- 📱 **Responsive UI:** Designed with Tailwind CSS for accessibility across devices.
+## ❗ Problem
+
+Journaling and mood-tracking apps often stop at data collection. Over time:
+
+- Entries accumulate but are rarely revisited  
+- Emotional patterns remain unnoticed  
+- Journaling feels repetitive and loses value  
+
+Without reflection, journaling becomes passive.
 
 ---
 
-## 🗓️ 15-Day Development Roadmap
+## 💡 What Sanara Does
 
-| Day       | Planned Tasks                                                                                      |
-|-----------|--------------------------------------------------------------------------------------------------|
-| **Day 1**  | Define project scope, research inspirations, and write the initial README file.                   |
-| **Day 2**  | Create low-fidelity wireframes for key components: Login, Journal, Mood Tracker, Community.       |
-| **Day 3**  | Develop high-fidelity UI mockups in Figma incorporating branding, colors, and typography.        |
-| **Day 4**  | Set up GitHub repository, initialize project board, and create initial issues/milestones.         |
-| **Day 5**  | Initialize backend environment: Node.js, Express, MongoDB Atlas connection, and data models.      |
-| **Day 6**  | Build RESTful APIs for moods and journal entries with full CRUD functionality.                    |
-| **Day 7**  | Implement user authentication: sign-up, login, JWT session management, password hashing with bcrypt. |
-| **Day 8**  | Add middleware for authentication checks, input validation, and error handling.                   |
-| **Day 9**  | Deploy backend on Render; configure environment variables and verify API functionality.            |
-| **Day 10** | Initialize frontend using React with Vite, configure Tailwind CSS, and set up routing.            |
-| **Day 11** | Develop core UI components: Login form, Mood tracker interface, Journal form, Challenge cards.    |
-| **Day 12** | Build Community page with posting and discussion features; implement responsive design.           |
-| **Day 13** | Connect frontend with backend APIs using Axios; ensure secure API requests with JWT tokens.       |
-| **Day 14** | Conduct integration testing, debug issues, and refine UI/UX based on test results.                |
-| **Day 15** | Deploy frontend to Vercel; finalize documentation, create demo video, and prepare project presentation. 🚀 |
+- Enables structured journaling with emotional context  
+- Stores and organizes mood, energy, tags, and triggers  
+- Analyzes recent entries internally  
+- Surfaces recurring emotional patterns as summaries  
+- Helps users reflect without prescribing actions  
+
+Sanara supports **awareness**, not solutions.
+
+---
+
+## 🚫 What Sanara Is NOT
+
+Sanara is intentionally **not**:
+
+- A mental health or therapy platform  
+- An advice or coaching application  
+- A social or community-based product  
+- An AI system that interprets emotions  
+
+All interpretation and action remain with the user.
+
+---
+
+## 🧠 Core Features
+
+### 🔐 Authentication
+- Username & password login  
+- Password hashing using bcrypt  
+- JWT-based protected routes  
+
+---
+
+### 📔 Structured Journaling
+Each entry includes:
+- Title and content  
+- Mood score (1–5)  
+- Energy level (Low / Medium / High)  
+- Emotional tags  
+- Context or trigger (Work, Sleep, Social, Health, etc.)  
+- Draft and final states  
+- Timestamps  
+
+---
+
+### 📊 Emotional Insights
+Sanara highlights patterns such as:
+- Repeated low or high mood periods  
+- Common emotional triggers  
+- Mood–energy relationships  
+- Frequently occurring emotional tags  
+- Weekly emotional summaries  
+
+Insights are generated from **user-provided data**, not assumptions.
+
+---
+
+### 🤖 Optional AI Summaries
+- AI is used only to rephrase existing insights into clearer language  
+- AI does not analyze journal content or generate advice  
+- The system functions fully without AI enabled  
+
+---
+
+## 🏗️ How It Works
+
+1. User creates a journal entry with emotional context  
+2. Data is stored securely in the database  
+3. The system processes recent entries using internal logic  
+4. Emotional insights are generated and saved  
+5. Users review summaries and reflect over time  
+
+---
+
+## 🔐 Privacy & Ethics
+
+- All journal data is private by default  
+- No social sharing or public visibility  
+- No third-party access to personal content  
+- No mental health advice or diagnosis  
+
+Sanara is designed with **restraint, clarity, and user agency**.
+
+---
+
+## 💭 Why Sanara?
+
+Sanara was built from the realization that journaling alone often doesn’t lead to reflection. Entries are written, forgotten, and rarely connected.  
+Rather than telling users what to do, Sanara helps them pause and **notice recurring emotional patterns** in their own data.
 
 ---
 
 ## 🧰 Tech Stack
 
-| Layer        | Tools / Libraries                     |
-|--------------|----------------------------------------|
-| **Frontend** | React.js (Vite), Tailwind CSS          |
-| **Backend**  | Node.js, Express.js                    |
-| **Database** | MongoDB Atlas                          |
-| **Auth**     | JWT, bcrypt.js                         |
-| **API Tools**| Bruno                                  |
-| **Deployment**| Render (backend), Vercel (frontend)   |
-| **UI Design**| Figma                                  |
+### Frontend
+- React (Vite)  
+- Tailwind CSS  
+
+### Backend
+- Node.js  
+- Express.js  
+
+### Database
+- MongoDB Atlas  
+
+### Authentication
+- JWT  
+- bcrypt  
+
+### Tooling & Deployment
+- GitHub Projects (task tracking)  
+- Render (Backend)  
+- Vercel (Frontend)  
+- Bruno (API testing)  
 
 ---
 
-## 🔐 Security Considerations  
-- Passwords are securely hashed using `bcryptjs`.  
-- JSON Web Tokens (JWT) handle authentication and session management.  
-- Environment variables manage sensitive information securely via `.env` files.
+## ⚠️ Limitations
+
+- Not a professional mental health tool  
+- Insight quality depends on consistent user input  
+- Emotional understanding is limited to user-defined labels  
+- AI is limited to presentation only  
 
 ---
 
-## 👩‍💻 Author  
-# *Lincy R*  
-### *Squad 74*
-### *Capstone Project Sanara – 2025*
+## 🔮 Future Enhancements
 
-##[Backend deployment Link](https://s74-lincy-capstone-sanara-1.onrender.com)
+- Downloadable insight summaries  
+- Improved visualizations  
+- Additional reflection views  
+- User-controlled integrations  
 
-##[Frontend deployment Link](https://chimerical-heliotrope-41b7e3.netlify.app/)
+---
 
+## 👩‍💻 Author
+
+**Lincy R**  
+Squad 74  
+Capstone Project — Sanara (2025)
+
+
+---
+
+## 🌐 Live Links
+
+- **Backend:** https://s74-lincy-capstone-sanara-1.onrender.com  
+- **Frontend:** https://chimerical-heliotrope-41b7e3.netlify.app/
+
+---
 
 
