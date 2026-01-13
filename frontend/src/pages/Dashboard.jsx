@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { User } from "lucide-react";
 import api from "../services/api";
 import InsightCard from "../components/InsightCard";
 import JournalCard from "../components/JournalCard";
@@ -22,12 +23,6 @@ export default function Dashboard() {
       });
   }, [navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  // ✅ DELETE HANDLER (works for drafts + entries)
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this journal?"
@@ -36,8 +31,6 @@ export default function Dashboard() {
 
     try {
       await api.delete(`/journals/${id}`);
-
-      // remove from BOTH lists safely
       setEntries((prev) => prev.filter((j) => j._id !== id));
       setDrafts((prev) => prev.filter((j) => j._id !== id));
     } catch (err) {
@@ -47,9 +40,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#2F3E34]">
-      {/* NAVBAR */}
+      {/* HEADER */}
       <header className="bg-white border-b border-[#E6EFEA]">
         <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
+          {/* LOGO */}
           <div>
             <h1 className="text-2xl font-semibold">🌿 Sanara</h1>
             <p className="text-sm text-[#7A8A80]">
@@ -57,7 +51,9 @@ export default function Dashboard() {
             </p>
           </div>
 
+          {/* RIGHT ACTIONS (SWAPPED ORDER) */}
           <div className="flex items-center gap-4">
+            {/* NEW ENTRY */}
             <Link
               to="/journal/new"
               className="bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm hover:opacity-90"
@@ -65,12 +61,14 @@ export default function Dashboard() {
               New entry
             </Link>
 
-            <button
-              onClick={handleLogout}
-              className="text-sm text-[#7A8A80] hover:text-red-600"
+            {/* PROFILE ICON */}
+            <Link
+              to="/profile"
+              title="Profile"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-[#E6EFEA] text-[#4F6F5B] hover:bg-[#FAF7F2] transition"
             >
-              Logout
-            </button>
+              <User size={18} />
+            </Link>
           </div>
         </div>
       </header>
@@ -97,7 +95,9 @@ export default function Dashboard() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Drafts</h3>
-            <span className="text-sm text-[#7A8A80]">{drafts.length}</span>
+            <span className="text-sm text-[#7A8A80]">
+              {drafts.length}
+            </span>
           </div>
 
           {drafts.length === 0 ? (
@@ -111,7 +111,7 @@ export default function Dashboard() {
                   key={journal._id}
                   journal={journal}
                   isDraft
-                  onDelete={handleDelete}   
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -121,8 +121,12 @@ export default function Dashboard() {
         {/* ENTRIES */}
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Journal entries</h3>
-            <span className="text-sm text-[#7A8A80]">{entries.length}</span>
+            <h3 className="text-lg font-semibold">
+              Journal entries
+            </h3>
+            <span className="text-sm text-[#7A8A80]">
+              {entries.length}
+            </span>
           </div>
 
           {entries.length === 0 ? (
@@ -135,7 +139,7 @@ export default function Dashboard() {
                 <JournalCard
                   key={journal._id}
                   journal={journal}
-                  onDelete={handleDelete}   
+                  onDelete={handleDelete}
                 />
               ))}
             </div>

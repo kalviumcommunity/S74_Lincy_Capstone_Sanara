@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const verifyToken = require("../middleware/verifyToken");
 
 const router = express.Router();
 
@@ -46,7 +47,6 @@ router.post("/login", async (req, res) => {
   try {
     let { email, password } = req.body;
 
-    // 🔥 normalize input
     email = email.trim().toLowerCase();
 
     const user = await User.findOne({ email });
@@ -71,5 +71,53 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Login failed" });
   }
 });
+
+/**
+ * GET CURRENT USER
+ * GET /api/auth/me
+ */
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+});
+
+/**
+ * CHANGE PASSWORD
+ * POST /api/auth/change-password
+ */
+router.post("/change-password", verifyToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: "Current password is incorrect" });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("CHANGE PASSWORD ERROR:", err);
+    res.status(500).json({ error: "Failed to update password" });
+  }
+});
+
 
 module.exports = router;
