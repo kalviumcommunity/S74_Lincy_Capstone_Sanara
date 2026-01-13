@@ -3,52 +3,57 @@ const router = express.Router();
 const Journal = require("../models/Journal");
 const verifyToken = require("../middleware/verifyToken");
 
-/* ============================
-   CREATE JOURNAL
-   ============================ */
+/**
+ * CREATE journal
+ */
 router.post("/", verifyToken, async (req, res) => {
   try {
-    const { title, content, mood, tags, isDraft } = req.body;
-
-    if (!title || !content) {
-      return res.status(400).json({ error: "Title and content are required" });
-    }
+    const { title, content, mood, tags, energy, context, isDraft } = req.body;
 
     const journal = new Journal({
       title,
       content,
-      mood: mood || "Neutral",
-      tags: tags || [],
-      isDraft: isDraft || false,
-      user: req.user.id, // 🔥 REQUIRED
+      mood,
+      tags,
+      energy,
+      context,
+      isDraft: Boolean(isDraft),
+      user: req.user.id,
     });
 
     const saved = await journal.save();
     res.status(201).json(saved);
   } catch (err) {
-    console.error("CREATE JOURNAL ERROR:", err);
-    res.status(500).json({ error: "Failed to create journal" });
+    console.error(err);
+    res.status(400).json({ error: "Failed to save journal" });
   }
 });
 
-/* ============================
-   GET ALL JOURNALS (DASHBOARD)
-   ============================ */
+/**
+ * ✅ GET journals (SPLIT drafts + entries)
+ * THIS FIXES YOUR DASHBOARD CRASH
+ */
 router.get("/", verifyToken, async (req, res) => {
   try {
     const journals = await Journal.find({ user: req.user.id })
       .sort({ createdAt: -1 });
 
-    res.json(journals);
+    const drafts = journals.filter(j => j.isDraft);
+    const entries = journals.filter(j => !j.isDraft);
+
+    res.json({
+      drafts,
+      entries,
+    });
   } catch (err) {
-    console.error("FETCH JOURNALS ERROR:", err);
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch journals" });
   }
 });
 
-/* ============================
-   GET SINGLE JOURNAL (EDIT)
-   ============================ */
+/**
+ * GET single journal
+ */
 router.get("/:id", verifyToken, async (req, res) => {
   try {
     const journal = await Journal.findOne({
@@ -62,27 +67,18 @@ router.get("/:id", verifyToken, async (req, res) => {
 
     res.json(journal);
   } catch (err) {
-    console.error("FETCH SINGLE JOURNAL ERROR:", err);
     res.status(500).json({ error: "Failed to fetch journal" });
   }
 });
 
-/* ============================
-   UPDATE JOURNAL
-   ============================ */
+/**
+ * UPDATE journal
+ */
 router.put("/:id", verifyToken, async (req, res) => {
   try {
-    const { title, content, mood, tags, isDraft } = req.body;
-
     const updated = await Journal.findOneAndUpdate(
       { _id: req.params.id, user: req.user.id },
-      {
-        title,
-        content,
-        mood,
-        tags,
-        isDraft,
-      },
+      req.body,
       { new: true }
     );
 
@@ -92,29 +88,23 @@ router.put("/:id", verifyToken, async (req, res) => {
 
     res.json(updated);
   } catch (err) {
-    console.error("UPDATE JOURNAL ERROR:", err);
-    res.status(500).json({ error: "Failed to update journal" });
+    res.status(400).json({ error: "Failed to update journal" });
   }
 });
 
-/* ============================
-   DELETE JOURNAL
-   ============================ */
+/**
+ * DELETE journal
+ */
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
-    const deleted = await Journal.findOneAndDelete({
+    await Journal.findOneAndDelete({
       _id: req.params.id,
       user: req.user.id,
     });
 
-    if (!deleted) {
-      return res.status(404).json({ error: "Journal not found" });
-    }
-
-    res.json({ message: "Journal deleted successfully" });
+    res.json({ message: "Journal deleted" });
   } catch (err) {
-    console.error("DELETE JOURNAL ERROR:", err);
-    res.status(500).json({ error: "Failed to delete journal" });
+    res.status(400).json({ error: "Failed to delete journal" });
   }
 });
 

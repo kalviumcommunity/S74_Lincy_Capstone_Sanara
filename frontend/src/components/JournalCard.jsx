@@ -1,70 +1,76 @@
 import { Link } from "react-router-dom";
-import api from "../services/api";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 
-export default function JournalCard({ journal }) {
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this entry?"
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await api.delete(`/journals/${journal._id}`);
-      window.location.reload();
-    } catch {
-      alert("Failed to delete entry.");
-    }
-  };
-
+export default function JournalCard({ journal, isDraft = false, onDelete }) {
   return (
-    <div className="bg-white border rounded-xl p-6 flex justify-between items-start">
-      
-      {/* Content */}
-      <div className="space-y-2">
-        <span className="inline-block text-xs px-3 py-1 rounded-full bg-green-100 text-green-700">
+    <div className="bg-white border border-[#E6EFEA] rounded-2xl p-5 flex justify-between gap-6 hover:shadow-sm transition">
+      {/* LEFT */}
+      <div className="flex-1 space-y-2">
+        <span className="inline-block text-xs px-3 py-1 rounded-full bg-[#E6EFEA] text-[#2F3E34]">
           {journal.mood}
         </span>
 
-        <h4 className="text-lg font-semibold">
+        <h4 className="text-lg font-semibold leading-snug">
           {journal.title}
         </h4>
 
-        <p className="text-gray-600 text-sm">
-          {journal.content.slice(0, 120)}...
+        <div className="flex flex-wrap items-center gap-4 text-xs text-[#7A8A80]">
+          {journal.energy && <span>⚡ Energy {journal.energy}/3</span>}
+          {journal.context && <span>📁 {journal.context}</span>}
+        </div>
+
+        <p className="text-sm text-[#7A8A80] line-clamp-2">
+          {journal.content}
         </p>
 
-        <p className="text-xs text-gray-400">
-          {new Date(journal.createdAt).toLocaleDateString()}
-        </p>
+        {journal.tags?.length > 0 && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {journal.tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="text-xs bg-[#FAF7F2] border border-[#E6EFEA] px-2 py-0.5 rounded-full"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-4">
-        <Link
-          to={`/journal/${journal._id}`}
-          className="text-gray-500 hover:text-[#4F6F5B]"
-          title="View entry"
-        >
-          <Eye size={18} />
-        </Link>
+      {/* RIGHT */}
+      <div className="flex flex-col items-end justify-between text-sm text-[#7A8A80]">
+        <span>
+          {new Date(journal.createdAt).toLocaleDateString()}
+        </span>
 
-        <Link
-          to={`/journal/edit/${journal._id}`}
-          className="text-gray-500 hover:text-blue-600"
-          title="Edit entry"
-        >
-          <Pencil size={18} />
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            to={`/journal/${journal._id}`}
+            title="View"
+            className="hover:text-[#4F6F5B]"
+          >
+            <Eye size={18} />
+          </Link>
 
-        <button
-          onClick={handleDelete}
-          className="text-gray-500 hover:text-red-600"
-          title="Delete entry"
-        >
-          <Trash2 size={18} />
-        </button>
+          {!isDraft && (
+            <Link
+              to={`/journal/edit/${journal._id}`}
+              title="Edit"
+              className="hover:text-[#4F6F5B]"
+            >
+              <Pencil size={18} />
+            </Link>
+          )}
+
+          <button
+            type="button"
+            title="Delete"
+            onClick={() => onDelete(journal._id)}   
+            className="hover:text-red-600"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
       </div>
     </div>
   );
