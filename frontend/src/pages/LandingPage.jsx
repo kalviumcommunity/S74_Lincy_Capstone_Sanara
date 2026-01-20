@@ -2,193 +2,270 @@ import { Link } from "react-router-dom";
 // eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
-import moodImg from "../assets/mood.jpg";
-import journalImg from "../assets/journal.jpg";
-import insightImg from "../assets/insights.jpg";
+import heroBg from "../assets/hero-bg.jpg";
+import moodImg from "../assets/mood.png";
+import journalImg from "../assets/journal.png";
+import insightImg from "../assets/insight.png";
+
+/* ---------------- MOTION PRESETS ---------------- */
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.8, ease: "easeOut" },
+  },
+};
+
+const stagger = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.15,
+    },
+  },
+};
 
 export default function Landing() {
   return (
-    <div className="bg-[#FAF7F2] text-[#2F3E34] min-h-screen overflow-hidden">
+    <div className="min-h-screen bg-[#D2E3DA] text-[#2F3E35]">
 
-      {/* NAVBAR */}
-      <header className="flex justify-between items-center px-10 py-6">
-        <h1 className="text-2xl font-semibold">🌿 Sanara</h1>
-        <div className="space-x-4">
-          <Link to="/login" className="text-sm font-medium">
-            Login
-          </Link>
-          <Link
-            to="/signup"
-            className="bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm"
-          >
-            Start Journaling
-          </Link>
+      {/* ================= NAVBAR ================= */}
+      <header className="fixed top-0 left-0 w-full z-20 bg-[#F6F3EE]/90 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex justify-between items-center">
+          <h1 className="text-xl font-medium tracking-wide">Sanara</h1>
+
+          <nav className="flex items-center gap-6 text-sm">
+            <a href="#how">How it works</a>
+            <a href="#features">Features</a>
+            <Link to="/login">Log in</Link>
+            <Link
+              to="/signup"
+              className="bg-[#5F7F6B] text-white px-5 py-2 rounded-full"
+            >
+              Begin
+            </Link>
+          </nav>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="flex flex-col items-center text-center mt-24 px-6">
-        <motion.h2
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-5xl font-serif mb-6"
-        >
-          See patterns in your emotions <br /> over time.
-        </motion.h2>
+      {/* ================= HERO ================= */}
+      <section
+        className="min-h-screen flex items-center justify-center relative pt-24"
+        style={{
+          backgroundImage: `url(${heroBg})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-[#D2E3DA]/30" />
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="max-w-xl text-lg text-[#7A8A80] mb-10"
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="relative max-w-2xl text-center bg-[#F6F3EE] px-14 py-16 rounded-[36px] shadow-md"
         >
-          Sanara is a private journaling system that turns structured
-          emotional entries into clear summaries — so you can reflect
-          without advice or judgment.
-        </motion.p>
+          <h2 className="text-5xl font-serif leading-tight mb-6">
+            Notice how you feel.
+            <br />
+            Understand it over time.
+          </h2>
 
-        <div className="space-x-4">
-          <Link
-            to="/signup"
-            className="bg-[#4F6F5B] text-white px-8 py-3 rounded-full"
-          >
-            Start Journaling
-          </Link>
-          <Link
-            to="/login"
-            className="border border-[#4F6F5B] px-8 py-3 rounded-full"
-          >
-            Login
-          </Link>
-        </div>
+          <p className="text-lg text-[#7B877E] mb-10">
+            Sanara is a private journaling space that helps you turn
+            emotions into patterns — not noise.
+          </p>
+
+          <div className="flex justify-center gap-4">
+            <Link
+              to="/signup"
+              className="bg-[#5F7F6B] text-white px-8 py-3 rounded-full"
+            >
+              Start your first reflection
+            </Link>
+            <Link
+              to="/login"
+              className="border border-[#5F7F6B] px-8 py-3 rounded-full"
+            >
+              Log in
+            </Link>
+          </div>
+        </motion.div>
       </section>
 
-      {/* WHAT SANARA HELPS YOU NOTICE */}
-      <section className="mt-36 px-10">
-        <h3 className="text-3xl font-serif text-center mb-14">
-          What Sanara Helps You Notice
-        </h3>
+      {/* ================= HOW IT WORKS ================= */}
+      <motion.section
+        id="how"
+        className="py-32 px-6"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={stagger}
+      >
+        <motion.h3
+          variants={fadeUp}
+          className="text-3xl font-serif text-center mb-20"
+        >
+          A simple rhythm for reflection
+        </motion.h3>
 
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-12">
           {[
             {
-              title: "Structured Mood Tracking",
-              desc: "Log mood, energy, tags, and context — not just free-form text.",
+              title: "Write freely",
+              desc: "No pressure. No performance. Just your thoughts as they are.",
+              bg: "bg-[#E7EFEA]",
+            },
+            {
+              title: "Mark how you feel",
+              desc: "Add mood and context to capture emotional signals over time.",
+              bg: "bg-[#ECEEF1]",
+            },
+            {
+              title: "Reflect over time",
+              desc: "Notice patterns that are invisible in day-to-day moments.",
+              bg: "bg-[#F3EFE9]",
+            },
+          ].map((card, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              className={`${card.bg} rounded-3xl p-10 text-center`}
+            >
+              <h4 className="text-xl font-medium mb-4">
+                {card.title}
+              </h4>
+              <p className="text-sm text-[#7B877E] leading-relaxed">
+                {card.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ================= FEATURES ================= */}
+      <motion.section
+        id="features"
+        className="py-32 px-6 bg-[#F6F3EE]"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={stagger}
+      >
+        <motion.h3
+          variants={fadeUp}
+          className="text-3xl font-serif text-center mb-20"
+        >
+          What Sanara helps you notice
+        </motion.h3>
+
+        <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-10">
+          {[
+            {
+              title: "Emotional signals",
+              desc: "Stop guessing why your mood shifts.",
               img: moodImg,
             },
             {
-              title: "Connected Journal Entries",
-              desc: "Entries don’t stay isolated — they are viewed together over time.",
+              title: "Connected reflections",
+              desc: "Your thoughts stop feeling scattered.",
               img: journalImg,
             },
             {
-              title: "Emotional Pattern Summaries",
-              desc: "Recurring moods, triggers, and trends surfaced from your data.",
+              title: "Patterns over time",
+              desc: "See trends that are invisible day-to-day.",
               img: insightImg,
             },
           ].map((item, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: i * 0.15 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-3xl p-6 border border-[#E6EFEA] shadow-sm hover:shadow-md transition"
+              variants={fadeUp}
+              className="bg-white rounded-3xl p-6 border border-[#E5DED5]"
             >
               <img
                 src={item.img}
                 alt={item.title}
                 className="w-full h-40 object-contain mb-6"
               />
-              <h4 className="text-xl font-medium mb-2">{item.title}</h4>
-              <p className="text-[#7A8A80] text-sm">{item.desc}</p>
+              <h4 className="text-xl font-medium mb-2">
+                {item.title}
+              </h4>
+              <p className="text-sm text-[#7B877E]">
+                {item.desc}
+              </p>
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      {/* HOW IT WORKS */}
-      <section className="mt-36 px-10">
-        <h3 className="text-3xl font-serif text-center mb-4">
-          How Sanara Works
-        </h3>
-        <p className="text-lg text-[#7A8A80] text-center mb-14">
-          From daily entries to long-term emotional awareness
-        </p>
-
-        <div className="grid md:grid-cols-4 gap-8">
-          {[
-            {
-              title: "Create Structured Entries",
-              desc: "Write journal entries with mood, energy level, emotional tags, and context.",
-            },
-            {
-              title: "Securely Store Your Data",
-              desc: "Entries are saved privately and timestamped for long-term reflection.",
-            },
-            {
-              title: "Surface Emotional Patterns",
-              desc: "The system highlights recurring moods, triggers, and trends over time.",
-            },
-            {
-              title: "Review & Reflect",
-              desc: "Summaries help you notice patterns without interpretation or advice.",
-            },
-          ].map((step, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.1 }}
-              viewport={{ once: true }}
-              className="bg-white rounded-2xl p-6 border border-[#E6EFEA] shadow-sm"
-            >
-              <h4 className="text-lg font-medium mb-3">{step.title}</h4>
-              <p className="text-sm text-[#7A8A80]">{step.desc}</p>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="mt-36 text-center px-6">
+      {/* ================= PRIVACY ================= */}
+      <motion.section
+        className="py-32 px-6 text-center"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={fadeUp}
+      >
         <h3 className="text-3xl font-serif mb-6">
-          Start tracking your emotional patterns
+          Private by design
+        </h3>
+        <p className="max-w-xl mx-auto text-[#7B877E]">
+          Your entries are not social content.
+          No feeds. No likes. No algorithms.
+          Just a space built for honesty.
+        </p>
+      </motion.section>
+
+      {/* ================= FINAL CTA ================= */}
+      <motion.section
+        className="pb-32 px-6 text-center"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={fadeUp}
+      >
+        <h3 className="text-3xl font-serif mb-8">
+          Start reflecting today
         </h3>
         <Link
           to="/signup"
-          className="bg-[#4F6F5B] text-white px-10 py-4 rounded-full text-lg"
+          className="bg-[#5F7F6B] text-white px-10 py-4 rounded-full text-lg"
         >
-          Start Journaling
+          Create your journal
         </Link>
-      </section>
+      </motion.section>
 
-      {/* FOOTER */}
-      <footer className="mt-36 py-12 px-6 bg-[#F3EFE9] text-sm text-[#7A8A80]">
-        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8 text-center md:text-left">
-          
+      {/* ================= FOOTER ================= */}
+      <motion.footer
+        className="bg-[#F6F3EE] py-12 px-6 text-sm text-[#7B877E]"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={fadeUp}
+      >
+        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-8">
           <div>
-            <h4 className="font-medium text-[#2F3E34] mb-2">Sanara</h4>
-            <p>
-              Private journaling for emotional pattern awareness.
-            </p>
+            <h4 className="font-medium text-[#2F3E35] mb-2">
+              Sanara
+            </h4>
+            <p>Designed for reflection, not performance.</p>
           </div>
-
           <div>
-            <h4 className="font-medium text-[#2F3E34] mb-2">Contact</h4>
-            <p>Email: lincyr.dev@gmail.com</p>
-            <p>LinkedIn · GitHub</p>
+            <h4 className="font-medium text-[#2F3E35] mb-2">
+              Project
+            </h4>
+            <p>Built as a full-stack journaling system.</p>
           </div>
-
           <div>
-            <h4 className="font-medium text-[#2F3E34] mb-2">Project</h4>
-            <p>Built as a capstone project</p>
-            <p>© 2026 Sanara</p>
+            <h4 className="font-medium text-[#2F3E35] mb-2">
+              © 2026
+            </h4>
+            <p>All thoughts remain private.</p>
           </div>
-
         </div>
-      </footer>
+      </motion.footer>
 
     </div>
   );

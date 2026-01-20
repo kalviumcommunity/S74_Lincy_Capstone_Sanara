@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signup } from "../services/auth";
+import api from "../services/api";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Signup() {
@@ -7,6 +8,7 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  // EMAIL SIGNUP
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -17,90 +19,107 @@ export default function Signup() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#2F3E34] flex flex-col">
-      
-      {/* Top Brand */}
-      <div className="px-10 py-6 text-xl font-semibold">
-        🌿 Sanara
-      </div>
+  // GOOGLE AUTH
+  useEffect(() => {
+    if (!window.google) return;
 
-      {/* Center Card */}
-      <div className="flex flex-1 items-center justify-center px-4">
-        <div className="bg-white w-full max-w-md rounded-3xl border border-[#E6EFEA] shadow-sm p-10">
-          
-          <h2 className="text-2xl font-serif text-center mb-2">
-            Create your account
-          </h2>
-          <p className="text-center text-[#7A8A80] mb-8">
-            Begin your journey of self-reflection
+    window.google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: async (response) => {
+        try {
+          const res = await api.post("/auth/google", {
+            credential: response.credential,
+          });
+
+          localStorage.setItem("token", res.data.token);
+          navigate("/dashboard");
+        } catch {
+          alert("Google authentication failed");
+        }
+      },
+    });
+
+    window.google.accounts.id.renderButton(
+      document.getElementById("google-signup-btn"),
+      {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+      }
+    );
+  }, [navigate]);
+
+  return (
+    <div className="min-h-screen bg-[#F6F3EE] flex flex-col">
+      {/* Brand */}
+      <header className="px-10 py-6 text-lg font-medium text-[#3F4F46] tracking-wide">
+        Sanara
+      </header>
+
+      <main className="flex flex-1 items-center justify-center px-4">
+        <div className="w-full max-w-md bg-white rounded-[32px] border border-[#E5DED5] p-10 shadow-sm">
+          <h1 className="text-3xl font-serif text-[#2F3E35] text-center mb-3">
+            Create your space
+          </h1>
+
+          <p className="text-center text-sm text-[#7B877E] mb-8 leading-relaxed">
+            A quiet place to reflect, write, and understand yourself better.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* Email */}
-            <div>
-              <label className="block text-sm mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="
-                  w-full px-4 py-3 rounded-xl border border-[#C9B8A6]
-                  bg-[#FAF7F2] placeholder:text-[#7A8A80]
-                  focus:outline-none focus:ring-2 focus:ring-[#4F6F5B]
-                "
-              />
-            </div>
+          {/* GOOGLE SIGNUP */}
+          <div id="google-signup-btn" className="mb-3 flex justify-center" />
+          <p className="text-xs text-center text-[#8A948D] mb-8">
+            Signing up with Google sets up your account instantly
+          </p>
 
-            {/* Password */}
-            <div>
-              <label className="block text-sm mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                placeholder="At least 6 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="
-                  w-full px-4 py-3 rounded-xl border border-[#C9B8A6]
-                  bg-[#FAF7F2] placeholder:text-[#7A8A80]
-                  focus:outline-none focus:ring-2 focus:ring-[#4F6F5B]
-                "
-              />
-            </div>
+          <div className="flex items-center gap-4 mb-8">
+            <div className="flex-1 h-px bg-[#E3E0DA]" />
+            <span className="text-xs text-[#8A948D] uppercase tracking-wider">
+              or sign up with email
+            </span>
+            <div className="flex-1 h-px bg-[#E3E0DA]" />
+          </div>
 
-            {/* Submit */}
+          {/* EMAIL SIGNUP */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-5 py-3 rounded-2xl bg-[#F6F3EE] border border-[#E3E0DA] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C8A78]"
+            />
+
+            <input
+              type="password"
+              placeholder="Password (minimum 6 characters)"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="w-full px-5 py-3 rounded-2xl bg-[#F6F3EE] border border-[#E3E0DA] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C8A78]"
+            />
+
             <button
               type="submit"
-              className="
-                w-full bg-[#4F6F5B] text-white py-3 rounded-full
-                font-medium hover:opacity-90 transition
-              "
+              className="w-full mt-4 bg-[#5F7F6B] hover:bg-[#4F6F5B] text-white py-3 rounded-full text-sm tracking-wide transition"
             >
-              Sign up
+              Begin journaling
             </button>
           </form>
 
-          {/* Footer */}
-          <p className="text-center text-sm text-[#7A8A80] mt-8">
-            Already have an account?{" "}
+          <p className="text-center text-sm text-[#6F7C74] mt-10">
+            Already have a space?{" "}
             <Link
               to="/login"
-              className="text-[#4F6F5B] font-medium"
+              className="text-[#5F7F6B] font-medium hover:underline"
             >
               Log in
             </Link>
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
