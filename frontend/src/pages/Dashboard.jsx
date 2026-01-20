@@ -25,7 +25,7 @@ export default function Dashboard() {
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this journal?"
+      "Are you sure you want to remove this entry?"
     );
     if (!confirmDelete) return;
 
@@ -39,33 +39,26 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#2F3E34]">
+    <div className="min-h-screen bg-[#F6F3EE] text-[#2F3E35]">
       {/* HEADER */}
-      <header className="bg-white border-b border-[#E6EFEA]">
+      <header className="bg-[#F6F3EE] border-b border-[#E5DED5]">
         <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
-          {/* LOGO */}
           <div>
-            <h1 className="text-2xl font-semibold">🌿 Sanara</h1>
-            <p className="text-sm text-[#7A8A80]">
-              Your space for reflection and patterns
-            </p>
+            <h1 className="text-xl font-medium tracking-wide">Sanara</h1>
           </div>
 
-          {/* RIGHT ACTIONS (SWAPPED ORDER) */}
           <div className="flex items-center gap-4">
-            {/* NEW ENTRY */}
             <Link
               to="/journal/new"
-              className="bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm hover:opacity-90"
+              className="bg-[#5F7F6B] hover:bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm transition"
             >
               New entry
             </Link>
 
-            {/* PROFILE ICON */}
             <Link
               to="/profile"
+              className="w-10 h-10 flex items-center justify-center rounded-full border border-[#E5DED5] text-[#5F7F6B] hover:bg-white transition"
               title="Profile"
-              className="w-10 h-10 flex items-center justify-center rounded-full border border-[#E6EFEA] text-[#4F6F5B] hover:bg-[#FAF7F2] transition"
             >
               <User size={18} />
             </Link>
@@ -74,38 +67,43 @@ export default function Dashboard() {
       </header>
 
       {/* MAIN */}
-      <main className="max-w-6xl mx-auto px-8 py-10 space-y-14">
+      <main className="max-w-6xl mx-auto px-8 py-12 space-y-16">
         {/* INTRO */}
-        <section>
-          <h2 className="text-2xl font-serif mb-2">Welcome back</h2>
-          <p className="text-[#7A8A80] max-w-2xl">
-            This is a snapshot of how you’ve been feeling recently.
-            Nothing here tells you what to do — it simply reflects
-            what you’ve recorded.
+        <section className="max-w-3xl">
+          <h2 className="text-3xl font-serif mb-3">
+            Your recent reflections
+          </h2>
+          <p className="text-sm text-[#7B877E] leading-relaxed">
+            This space gently mirrors your thoughts and emotions over time.
+            There’s nothing to fix here — only patterns to notice.
           </p>
         </section>
 
         {/* INSIGHTS */}
-        <section className="space-y-4">
-          <h3 className="text-lg font-semibold">Emotional overview</h3>
+        <section className="space-y-5">
+          <h3 className="text-lg font-medium">
+            Emotional overview
+          </h3>
           <InsightCard />
         </section>
 
         {/* DRAFTS */}
-        <section className="space-y-4">
+        <section className="space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Drafts</h3>
-            <span className="text-sm text-[#7A8A80]">
+            <h3 className="text-lg font-medium">
+              In progress
+            </h3>
+            <span className="text-sm text-[#8A948D]">
               {drafts.length}
             </span>
           </div>
 
           {drafts.length === 0 ? (
-            <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6 text-sm text-[#7A8A80]">
-              No drafts right now.
+            <div className="bg-white border border-[#E5DED5] rounded-2xl p-6 text-sm text-[#8A948D]">
+              You don’t have any unfinished thoughts right now.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {drafts.map((journal) => (
                 <JournalCard
                   key={journal._id}
@@ -119,22 +117,22 @@ export default function Dashboard() {
         </section>
 
         {/* ENTRIES */}
-        <section className="space-y-4">
+        <section className="space-y-5">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">
-              Journal entries
+            <h3 className="text-lg font-medium">
+              Past entries
             </h3>
-            <span className="text-sm text-[#7A8A80]">
+            <span className="text-sm text-[#8A948D]">
               {entries.length}
             </span>
           </div>
 
           {entries.length === 0 ? (
-            <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6 text-sm text-[#7A8A80]">
-              You haven’t saved any completed entries yet.
+            <div className="bg-white border border-[#E5DED5] rounded-2xl p-6 text-sm text-[#8A948D]">
+              Your completed reflections will appear here over time.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {entries.map((journal) => (
                 <JournalCard
                   key={journal._id}

@@ -9,13 +9,30 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
+    // 🔐 Password only for local auth users
     password: {
       type: String,
-      required: true,
+      required: function () {
+        return this.provider === "local";
+      },
+    },
+
+    // 🔑 Auth provider
+    provider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    // 🆔 Google account ID
+    googleId: {
+      type: String,
+      default: null,
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

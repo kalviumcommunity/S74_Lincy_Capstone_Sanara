@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Landing from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -10,19 +10,17 @@ import Profile from "./pages/Profile";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <Routes>
+      {/* Public */}
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
 
-        {/* App */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/journal/new" element={<NewJournal />} />
-        <Route path="/journal/edit/:id" element={<EditJournal />} />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
-    </BrowserRouter>
+      {/* App */}
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/journal/new" element={<NewJournal />} />
+      <Route path="/journal/edit/:id" element={<EditJournal />} />
+      <Route path="/profile" element={<Profile />} />
+    </Routes>
   );
 }
