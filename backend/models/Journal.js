@@ -40,7 +40,7 @@ const journalSchema = new mongoose.Schema({
 
   isDraft: {
     type: Boolean,
-    default: false,
+    default: true,
   },
 
   /* Ownership */

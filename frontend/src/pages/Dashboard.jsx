@@ -23,42 +23,46 @@ export default function Dashboard() {
       });
   }, [navigate]);
 
-  const handleDelete = async (id) => {
+  const entryCount = entries.length;
+
+  // 🧨 DELETE DRAFT
+  const handleDeleteDraft = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to remove this entry?"
+      "Delete this draft? This cannot be undone."
     );
     if (!confirmDelete) return;
 
     try {
       await api.delete(`/journals/${id}`);
-      setEntries((prev) => prev.filter((j) => j._id !== id));
-      setDrafts((prev) => prev.filter((j) => j._id !== id));
+      setDrafts((prev) => prev.filter((d) => d._id !== id));
     } catch (err) {
-      console.error("Delete failed", err);
+      console.error("Failed to delete draft", err);
     }
+  };
+
+  // ▶️ RESUME DRAFT
+  const handleResumeDraft = (id) => {
+    navigate(`/journal/edit/${id}`);
   };
 
   return (
     <div className="min-h-screen bg-[#F6F3EE] text-[#2F3E35]">
       {/* HEADER */}
-      <header className="bg-[#F6F3EE] border-b border-[#E5DED5]">
-        <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-medium tracking-wide">Sanara</h1>
-          </div>
+      <header className="border-b border-[#E5DED5]">
+        <div className="max-w-5xl mx-auto px-8 py-6 flex justify-between items-center">
+          <h1 className="text-xl font-medium">Sanara</h1>
 
           <div className="flex items-center gap-4">
             <Link
               to="/journal/new"
-              className="bg-[#5F7F6B] hover:bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm transition"
+              className="bg-[#5F7F6B] text-white px-6 py-2 rounded-full text-sm hover:bg-[#4F6F5B]"
             >
-              New entry
+              Add today’s reflection
             </Link>
 
             <Link
               to="/profile"
-              className="w-10 h-10 flex items-center justify-center rounded-full border border-[#E5DED5] text-[#5F7F6B] hover:bg-white transition"
-              title="Profile"
+              className="w-10 h-10 rounded-full border border-[#E5DED5] flex items-center justify-center"
             >
               <User size={18} />
             </Link>
@@ -67,82 +71,87 @@ export default function Dashboard() {
       </header>
 
       {/* MAIN */}
-      <main className="max-w-6xl mx-auto px-8 py-12 space-y-16">
-        {/* INTRO */}
-        <section className="max-w-3xl">
-          <h2 className="text-3xl font-serif mb-3">
-            Your recent reflections
-          </h2>
-          <p className="text-sm text-[#7B877E] leading-relaxed">
-            This space gently mirrors your thoughts and emotions over time.
-            There’s nothing to fix here — only patterns to notice.
-          </p>
-        </section>
+      <main className="max-w-5xl mx-auto px-8 py-14 space-y-16">
+        {/* HERO / EMPTY STATE */}
+        {entryCount < 3 ? (
+          <section className="max-w-2xl space-y-4">
+            <h2 className="text-3xl font-serif">
+              We’re still learning your patterns
+            </h2>
+            <p className="text-sm text-[#7B877E]">
+              Add {3 - entryCount} more reflections to unlock your first insight.
+            </p>
 
-        {/* INSIGHTS */}
-        <section className="space-y-5">
-          <h3 className="text-lg font-medium">
-            Emotional overview
-          </h3>
-          <InsightCard />
-        </section>
-
-        {/* DRAFTS */}
-        <section className="space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">
-              In progress
-            </h3>
-            <span className="text-sm text-[#8A948D]">
-              {drafts.length}
-            </span>
-          </div>
-
-          {drafts.length === 0 ? (
-            <div className="bg-white border border-[#E5DED5] rounded-2xl p-6 text-sm text-[#8A948D]">
-              You don’t have any unfinished thoughts right now.
+            <div className="w-full h-2 bg-[#E5DED5] rounded-full">
+              <div
+                className="h-full bg-[#5F7F6B]"
+                style={{ width: `${(entryCount / 3) * 100}%` }}
+              />
             </div>
-          ) : (
-            <div className="space-y-4">
+          </section>
+        ) : (
+          <section className="space-y-6">
+            <div>
+              <h2 className="text-3xl font-serif">
+                What’s affecting you lately
+              </h2>
+              <p className="text-sm text-[#7B877E]">
+                Based on your last {entryCount} reflections
+              </p>
+            </div>
+
+            <InsightCard />
+          </section>
+        )}
+
+        {/* 📝 DRAFTS */}
+        {drafts.length > 0 && (
+          <section className="space-y-4">
+            <h3 className="text-sm uppercase tracking-wide text-[#7B877E]">
+              Drafts ({drafts.length})
+            </h3>
+
+            <div className="space-y-3">
               {drafts.map((journal) => (
                 <JournalCard
                   key={journal._id}
                   journal={journal}
                   isDraft
-                  onDelete={handleDelete}
+                  onResume={() => handleResumeDraft(journal._id)}
+                  onDelete={() => handleDeleteDraft(journal._id)}
                 />
               ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
 
-        {/* ENTRIES */}
-        <section className="space-y-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium">
-              Past entries
-            </h3>
-            <span className="text-sm text-[#8A948D]">
-              {entries.length}
-            </span>
-          </div>
+        {/* 📚 PAST ENTRIES (READ ONLY) */}
+        {entries.length > 0 && (
+          <section className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm uppercase tracking-wide text-[#7B877E]">
+                Past reflections
+              </h3>
 
-          {entries.length === 0 ? (
-            <div className="bg-white border border-[#E5DED5] rounded-2xl p-6 text-sm text-[#8A948D]">
-              Your completed reflections will appear here over time.
+              <Link
+                to="/history"
+                className="text-sm text-[#7B877E] hover:text-[#2F3E35]"
+              >
+                View all →
+              </Link>
             </div>
-          ) : (
-            <div className="space-y-5">
-              {entries.map((journal) => (
+
+            <div className="space-y-4">
+              {entries.slice(0, 3).map((journal) => (
                 <JournalCard
                   key={journal._id}
                   journal={journal}
-                  onDelete={handleDelete}
+                  readOnly
                 />
               ))}
             </div>
-          )}
-        </section>
+          </section>
+        )}
       </main>
     </div>
   );
