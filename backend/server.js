@@ -8,6 +8,13 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://localhost:4173",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:4173",
+]);
+
 /* =========================
    MIDDLEWARE
 ========================= */
@@ -15,7 +22,13 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite frontend
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );

@@ -36,20 +36,25 @@ export default function Profile() {
   };
 
   const handleChangePassword = async () => {
-  try {
-    const res = await api.post("/auth/change-password", {
-      currentPassword,
-      newPassword,
-    });
+    try {
+      const payload = {
+        newPassword,
+      };
 
-    alert(res.data.message);
-    setCurrentPassword("");
-    setNewPassword("");
-  } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.error || "Failed to update password");
-  }
-};
+      if (user.provider === "local") {
+        payload.currentPassword = currentPassword;
+      }
+
+      const res = await api.post("/auth/change-password", payload);
+
+      alert(res.data.message);
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.error || "Failed to update password");
+    }
+  };
 
   if (!user) {
     return (
@@ -60,6 +65,7 @@ export default function Profile() {
   }
 
   const initial = user.email.charAt(0).toUpperCase();
+  const isGoogleAccount = user.provider === "google";
 
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#2F3E34]">
@@ -119,20 +125,23 @@ export default function Profile() {
         {/* CHANGE PASSWORD */}
         <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6 space-y-4">
           <h2 className="font-semibold flex items-center gap-2">
-            <Lock size={16} /> Change password
+            <Lock size={16} />
+            {isGoogleAccount ? "Set password" : "Change password"}
           </h2>
 
-          <input
-            type="password"
-            placeholder="Current password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full border border-[#E6EFEA] rounded-lg px-4 py-2"
-          />
+          {!isGoogleAccount && (
+            <input
+              type="password"
+              placeholder="Current password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="w-full border border-[#E6EFEA] rounded-lg px-4 py-2"
+            />
+          )}
 
           <input
             type="password"
-            placeholder="New password"
+            placeholder={isGoogleAccount ? "Create a password" : "New password"}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             className="w-full border border-[#E6EFEA] rounded-lg px-4 py-2"
@@ -142,7 +151,7 @@ export default function Profile() {
             onClick={handleChangePassword}
             className="bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm hover:opacity-90"
           >
-            Update password
+            {isGoogleAccount ? "Set password" : "Update password"}
           </button>
         </div>
 

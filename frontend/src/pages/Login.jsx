@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { login } from "../services/auth";
-import api from "../services/api";
+import { useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
+import { googleLogin, login } from "../services/auth";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
@@ -19,35 +19,18 @@ export default function Login() {
     }
   };
 
-  // GOOGLE AUTH
-  useEffect(() => {
-    if (!window.google) return;
-
-    window.google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: async (response) => {
-        try {
-          const res = await api.post("/auth/google", {
-            credential: response.credential,
-          });
-
-          localStorage.setItem("token", res.data.token);
-          navigate("/dashboard");
-        } catch {
-          alert("Google authentication failed");
-        }
-      },
-    });
-
-    window.google.accounts.id.renderButton(
-      document.getElementById("google-login-btn"),
-      {
-        theme: "outline",
-        size: "large",
-        width: "100%",
+  const handleGoogleSuccess = async (response) => {
+    try {
+      if (!response?.credential) {
+        throw new Error("Missing Google credential");
       }
-    );
-  }, [navigate]);
+
+      await googleLogin(response.credential);
+      navigate("/dashboard");
+    } catch {
+      alert("Google authentication failed");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F6F3EE] flex flex-col">
@@ -67,7 +50,16 @@ export default function Login() {
           </p>
 
           {/* GOOGLE LOGIN */}
-          <div id="google-login-btn" className="mb-8 flex justify-center" />
+          <div className="mb-8 flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => alert("Google authentication failed")}
+              theme="outline"
+              size="large"
+              width={320}
+              shape="pill"
+            />
+          </div>
 
           <div className="flex items-center gap-4 mb-8">
             <div className="flex-1 h-px bg-[#E3E0DA]" />
