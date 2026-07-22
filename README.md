@@ -174,7 +174,7 @@ Capstone Project — Sanara (2025)
 ## 🌐 Live Links
 
 - **Backend:** https://s74-lincy-capstone-sanara-1.onrender.com  
-- **Frontend:** https://chimerical-heliotrope-41b7e3.netlify.app/
+- **Frontend:** https://sanaraweb.netlify.app/
 
 ---
 
