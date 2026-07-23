@@ -8,19 +8,64 @@ import NewJournal from "./pages/NewJournal";
 import EditJournal from "./pages/EditJournal";
 import Profile from "./pages/Profile";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+
 export default function App() {
   return (
     <Routes>
-      {/* Public */}
+      {/* Public Routes */}
       <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <Signup />
+          </PublicRoute>
+        }
+      />
 
-      {/* App */}
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/journal/new" element={<NewJournal />} />
-      <Route path="/journal/edit/:id" element={<EditJournal />} />
-      <Route path="/profile" element={<Profile />} />
+      {/* Protected App Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/journal/new"
+        element={
+          <ProtectedRoute>
+            <NewJournal />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/journal/edit/:id"
+        element={
+          <ProtectedRoute>
+            <EditJournal />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

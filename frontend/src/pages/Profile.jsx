@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { User, LogOut, Lock } from "lucide-react";
 import api from "../services/api";
 
@@ -74,15 +74,25 @@ export default function Profile() {
         <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
           {/* LEFT */}
           <div>
-            <h1 className="text-2xl font-semibold">🌿 Sanara</h1>
+            <Link to="/dashboard" className="text-2xl font-semibold hover:opacity-80 transition inline-block">
+              🌿 Sanara
+            </Link>
             <p className="text-sm text-[#7A8A80]">
               Your space for reflection and patterns
             </p>
           </div>
 
-          {/* RIGHT — PROFILE AVATAR ONLY */}
-          <div className="w-10 h-10 rounded-full bg-[#E6EFEA] flex items-center justify-center text-[#4F6F5B] font-semibold">
-            {initial}
+          {/* RIGHT — DASHBOARD & AVATAR */}
+          <div className="flex items-center gap-4">
+            <Link
+              to="/dashboard"
+              className="text-sm text-[#4F6F5B] hover:underline font-medium"
+            >
+              ← Back to Dashboard
+            </Link>
+            <div className="w-10 h-10 rounded-full bg-[#E6EFEA] flex items-center justify-center text-[#4F6F5B] font-semibold">
+              {initial}
+            </div>
           </div>
         </div>
       </header>

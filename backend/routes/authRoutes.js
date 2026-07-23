@@ -16,24 +16,47 @@ router.post("/register", async (req, res) => {
     const email = normalizeEmail(req.body.email);
     const { password } = req.body;
 
-    if (!email || !password)
-      return res.status(400).json({ error: "Email and password required" });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Please enter a valid email address" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
 
     const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ error: "User already exists" });
+    if (existingUser) {
+      return res.status(400).json({ error: "An account with this email already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({
+    const user = await User.create({
       email,
       password: hashedPassword,
       provider: "local",
     });
 
-    res.status(201).json({ message: "User registered successfully" });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        provider: user.provider,
+      },
+    });
   } catch (err) {
     console.error("REGISTER ERROR:", err);
-    res.status(500).json({ error: "Registration failed" });
+    res.status(500).json({ error: "Registration failed. Please try again." });
   }
 });
 
@@ -44,24 +67,40 @@ router.post("/login", async (req, res) => {
     const { password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "Email and password required" });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "Invalid credentials" });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({
+        error: "This account was registered using Google Sign-In. Please sign in with Google.",
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ error: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        provider: user.provider,
+      },
+    });
   } catch (err) {
     console.error("LOGIN ERROR:", err);
-    res.status(500).json({ error: "Login failed" });
+    res.status(500).json({ error: "Login failed. Please try again." });
   }
 });
 
@@ -71,7 +110,7 @@ router.post("/google", async (req, res) => {
     const { credential } = req.body;
 
     if (!credential) {
-      return res.status(400).json({ error: "Google credential required" });
+      return res.status(400).json({ error: "Google credential is required" });
     }
 
     const ticket = await client.verifyIdToken({
@@ -84,7 +123,7 @@ router.post("/google", async (req, res) => {
     const googleId = payload.sub;
 
     if (!email || !googleId) {
-      return res.status(400).json({ error: "Google account data missing" });
+      return res.status(400).json({ error: "Google account data is missing" });
     }
 
     let user = await User.findOne({ email });
@@ -101,13 +140,20 @@ router.post("/google", async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        provider: user.provider,
+      },
+    });
   } catch (err) {
     console.error("GOOGLE AUTH ERROR:", err);
-    res.status(401).json({ error: "Google authentication failed" });
+    res.status(401).json({ error: err.message || "Google authentication failed" });
   }
 });
 

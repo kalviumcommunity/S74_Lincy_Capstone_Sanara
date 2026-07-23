@@ -11,13 +11,37 @@ const api = axios.create({
 // Attach token automatically
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // MUST exist
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Response interceptor to handle invalid/expired token globally
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      const isAuthEndpoint =
+        error.config?.url?.includes("/auth/login") ||
+        error.config?.url?.includes("/auth/register") ||
+        error.config?.url?.includes("/auth/google");
+      if (!isAuthEndpoint) {
+        localStorage.removeItem("token");
+        if (
+          window.location.pathname !== "/login" &&
+          window.location.pathname !== "/signup" &&
+          window.location.pathname !== "/"
+        ) {
+          window.location.href = "/login";
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default api;

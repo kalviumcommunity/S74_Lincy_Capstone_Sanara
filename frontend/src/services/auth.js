@@ -7,7 +7,9 @@ export const login = async ({ email, password }) => {
     email: normalizeEmail(email),
     password,
   });
-  localStorage.setItem("token", res.data.token);
+  if (res.data?.token) {
+    localStorage.setItem("token", res.data.token);
+  }
   return res.data;
 };
 
@@ -16,15 +18,24 @@ export const signup = async ({ email, password }) => {
     email: normalizeEmail(email),
     password,
   });
+  if (res.data?.token) {
+    localStorage.setItem("token", res.data.token);
+  }
   return res.data;
 };
 
 export const googleLogin = async (credential) => {
   const res = await api.post("/auth/google", { credential });
-  localStorage.setItem("token", res.data.token);
+  if (res.data?.token) {
+    localStorage.setItem("token", res.data.token);
+  }
   return res.data;
 };
 
 export const logout = () => {
   localStorage.removeItem("token");
+};
+
+export const isAuthenticated = () => {
+  return Boolean(localStorage.getItem("token"));
 };
