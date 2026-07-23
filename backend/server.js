@@ -8,11 +8,18 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
+const envOrigins = (process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://localhost:4173",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:4173",
+  "https://sanaraweb.netlify.app",
+  ...envOrigins,
 ]);
 
 /* =========================
