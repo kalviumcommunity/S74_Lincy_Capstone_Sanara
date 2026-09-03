@@ -1,181 +1,161 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { User, LogOut, Lock } from "lucide-react";
-import api from "../services/api";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
+import { situationService } from "../services/situationService";
+import { useToast } from "../context/ToastContext";
+import { motion } from "framer-motion";
+import { User, Mail, Calendar, Layers, CheckCircle2, Brain, Compass, Save } from "lucide-react";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [stats, setStats] = useState({ entries: 0, drafts: 0 });
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const navigate = useNavigate();
+  const { user, updateProfile } = useAuth();
+  const { showToast } = useToast();
+
+  const [name, setName] = useState(user?.name || "");
+  const [saving, setSaving] = useState(false);
+
+  const [stats, setStats] = useState({
+    situations: 0,
+    activeThreads: 0,
+    resolved: 0,
+    patterns: 0,
+  });
 
   useEffect(() => {
-    api
-      .get("/auth/me")
-      .then((res) => setUser(res.data))
-      .catch(() => {
-        localStorage.removeItem("token");
-        navigate("/login");
-      });
-
-    api
-      .get("/journals")
-      .then((res) => {
-        setStats({
-          entries: res.data.entries.length,
-          drafts: res.data.drafts.length,
-        });
-      })
-      .catch(() => {});
-  }, [navigate]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
-
-  const handleChangePassword = async () => {
-    try {
-      const payload = {
-        newPassword,
-      };
-
-      if (user.provider === "local") {
-        payload.currentPassword = currentPassword;
+    let isMounted = true;
+    (async () => {
+      try {
+        const [sits, pats] = await Promise.allSettled([
+          situationService.getSituations(),
+          situationService.getPatterns(),
+        ]);
+        if (isMounted) {
+          if (sits.status === "fulfilled" && Array.isArray(sits.value)) {
+            const all = sits.value;
+            setStats((prev) => ({
+              ...prev,
+              situations: all.length,
+              activeThreads: all.filter((s) => s.status !== "resolved").length,
+              resolved: all.filter((s) => s.status === "resolved").length,
+            }));
+          }
+          if (pats.status === "fulfilled" && pats.value?.patterns) {
+            setStats((prev) => ({ ...prev, patterns: pats.value.patterns.length }));
+          }
+        }
+      } catch (e) {
+        console.error(e);
       }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-      const res = await api.post("/auth/change-password", payload);
-
-      alert(res.data.message);
-      setCurrentPassword("");
-      setNewPassword("");
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      await updateProfile({ name });
+      showToast("Profile name updated successfully", "success");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Failed to update password");
+      showToast("Failed to update profile", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-[#FAF7F2] flex items-center justify-center text-[#7A8A80]">
-        Loading profile…
-      </div>
-    );
-  }
-
-  const initial = user.email.charAt(0).toUpperCase();
-  const isGoogleAccount = user.provider === "google";
-
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#2F3E34]">
-      {/* HEADER */}
-      <header className="bg-white border-b border-[#E6EFEA]">
-        <div className="max-w-6xl mx-auto px-8 py-6 flex items-center justify-between">
-          {/* LEFT */}
-          <div>
-            <Link to="/dashboard" className="text-2xl font-semibold hover:opacity-80 transition inline-block">
-              🌿 Sanara
-            </Link>
-            <p className="text-sm text-[#7A8A80]">
-              Your space for reflection and patterns
+    <div className="space-y-8 max-w-4xl mx-auto pt-2">
+      {/* Header */}
+      <div className="space-y-2">
+        <p className="eyebrow-xs text-[var(--sky-deep)] tracking-widest font-extrabold">YOUR SPACE</p>
+        <h1 className="page-title text-[var(--text-primary)] font-serif font-bold">Profile & Reflection Journey</h1>
+      </div>
+
+      {/* User Profile Card */}
+      <div className="pinterest-card p-8 bg-[var(--card-bg)] border-[var(--border-subtle)] space-y-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          <div className="w-16 h-16 rounded-full bg-[var(--sky-soft)] border-2 border-[var(--sky-primary)] text-[var(--sky-deep)] flex items-center justify-center font-serif text-2xl font-bold shrink-0">
+            {user?.name ? user.name.charAt(0).toUpperCase() : "S"}
+          </div>
+
+          <div className="space-y-1 min-w-0 flex-1">
+            <h2 className="font-serif text-2xl font-bold text-[var(--text-primary)]">
+              {user?.name || "Thoughtful User"}
+            </h2>
+            <p className="text-xs text-[var(--text-secondary)] font-bold flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-[var(--sky-deep)]" />
+              <span>{user?.email || "user@domain.com"}</span>
+            </p>
+            <p className="text-xs text-[var(--text-muted)] font-bold flex items-center gap-1.5 pt-1">
+              <Calendar className="w-3.5 h-3.5 text-[var(--sky-deep)]" />
+              <span>Member of private thinking space</span>
             </p>
           </div>
-
-          {/* RIGHT — DASHBOARD & AVATAR */}
-          <div className="flex items-center gap-4">
-            <Link
-              to="/dashboard"
-              className="text-sm text-[#4F6F5B] hover:underline font-medium"
-            >
-              ← Back to Dashboard
-            </Link>
-            <div className="w-10 h-10 rounded-full bg-[#E6EFEA] flex items-center justify-center text-[#4F6F5B] font-semibold">
-              {initial}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* CONTENT */}
-      <main className="max-w-4xl mx-auto px-8 py-12 space-y-8">
-        {/* ACCOUNT INFO */}
-        <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6">
-          <h2 className="font-semibold mb-4">Account</h2>
-
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm text-[#7A8A80]">Email</p>
-              <p className="font-medium">{user.email}</p>
-            </div>
-
-            <div>
-              <p className="text-sm text-[#7A8A80]">Joined</p>
-              <p className="font-medium">
-                {user.createdAt
-                  ? new Date(user.createdAt).toLocaleDateString()
-                  : "—"}
-              </p>
-            </div>
-          </div>
         </div>
 
-        {/* STATS */}
-        <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6 grid grid-cols-2 text-center">
-          <div>
-            <p className="text-2xl font-semibold">{stats.entries}</p>
-            <p className="text-sm text-[#7A8A80]">Entries</p>
-          </div>
-          <div>
-            <p className="text-2xl font-semibold">{stats.drafts}</p>
-            <p className="text-sm text-[#7A8A80]">Drafts</p>
-          </div>
-        </div>
-
-        {/* CHANGE PASSWORD */}
-        <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6 space-y-4">
-          <h2 className="font-semibold flex items-center gap-2">
-            <Lock size={16} />
-            {isGoogleAccount ? "Set password" : "Change password"}
-          </h2>
-
-          {!isGoogleAccount && (
+        {/* Edit Form */}
+        <form onSubmit={handleSave} className="pt-4 border-t border-[var(--border-subtle)] space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-[var(--text-primary)]">Display Name</label>
             <input
-              type="password"
-              placeholder="Current password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="w-full border border-[#E6EFEA] rounded-lg px-4 py-2"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input-sky text-xs max-w-md font-bold"
             />
-          )}
-
-          <input
-            type="password"
-            placeholder={isGoogleAccount ? "Create a password" : "New password"}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full border border-[#E6EFEA] rounded-lg px-4 py-2"
-          />
+          </div>
 
           <button
-            onClick={handleChangePassword}
-            className="bg-[#4F6F5B] text-white px-5 py-2 rounded-full text-sm hover:opacity-90"
+            type="submit"
+            disabled={saving || !name.trim()}
+            className="btn-sky-primary text-xs py-2.5 px-6 font-bold shadow-xs cursor-pointer"
           >
-            {isGoogleAccount ? "Set password" : "Update password"}
+            <Save className="w-3.5 h-3.5" />
+            <span>{saving ? "Saving..." : "Save changes"}</span>
           </button>
-        </div>
+        </form>
+      </div>
 
-        {/* LOGOUT */}
-        <div className="bg-white border border-[#E6EFEA] rounded-2xl p-6">
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-sm text-red-600 hover:text-red-700"
-          >
-            <LogOut size={16} />
-            Logout
-          </button>
+      {/* YOUR JOURNEY REFLECTION STATISTICS */}
+      <section className="space-y-4">
+        <h3 className="eyebrow-xs text-[var(--text-muted)] font-extrabold">YOUR THINKING JOURNEY</h3>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="pinterest-card p-5 bg-[var(--card-bg)] border-[var(--border-subtle)] space-y-2">
+            <div className="w-9 h-9 rounded-2xl bg-[var(--sky-soft)] text-[var(--sky-deep)] flex items-center justify-center font-bold">
+              <Compass className="w-4 h-4" />
+            </div>
+            <p className="text-3xl font-serif font-bold text-[var(--text-primary)]">{stats.situations}</p>
+            <p className="text-xs text-[var(--text-secondary)] font-bold">Situations explored</p>
+          </div>
+
+          <div className="pinterest-card p-5 bg-[var(--card-bg)] border-[var(--border-subtle)] space-y-2">
+            <div className="w-9 h-9 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+              <Layers className="w-4 h-4" />
+            </div>
+            <p className="text-3xl font-serif font-bold text-[var(--text-primary)]">{stats.activeThreads}</p>
+            <p className="text-xs text-[var(--text-secondary)] font-bold">Active threads</p>
+          </div>
+
+          <div className="pinterest-card p-5 bg-[var(--card-bg)] border-[var(--border-subtle)] space-y-2">
+            <div className="w-9 h-9 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+            <p className="text-3xl font-serif font-bold text-[var(--text-primary)]">{stats.resolved}</p>
+            <p className="text-xs text-[var(--text-secondary)] font-bold">Resolved chapters</p>
+          </div>
+
+          <div className="pinterest-card p-5 bg-[var(--card-bg)] border-[var(--border-subtle)] space-y-2">
+            <div className="w-9 h-9 rounded-2xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+              <Brain className="w-4 h-4" />
+            </div>
+            <p className="text-3xl font-serif font-bold text-[var(--text-primary)]">{stats.patterns}</p>
+            <p className="text-xs text-[var(--text-secondary)] font-bold">Patterns discovered</p>
+          </div>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

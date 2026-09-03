@@ -1,10 +1,11 @@
+const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
-const journalRoutes = require("./routes/journalRoutes");
 const authRoutes = require("./routes/authRoutes");
+const situationRoutes = require("./routes/situationRoutes");
 
 const app = express();
 
@@ -33,7 +34,9 @@ app.use(
       if (!origin || allowedOrigins.has(origin)) {
         return callback(null, true);
       }
-
+      if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
       return callback(new Error(`CORS blocked for origin: ${origin}`));
     },
     credentials: true,
@@ -43,25 +46,30 @@ app.use(
 /* =========================
    DATABASE
 ========================= */
+const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/sanara2";
+
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
+    console.error("❌ MongoDB connection error:", err.message);
   });
 
 /* =========================
    ROUTES
 ========================= */
-app.use("/api/journals", journalRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/situations", situationRoutes);
 
 /* =========================
-   HEALTH CHECK (DEBUGGING)
+   HEALTH CHECK
 ========================= */
 app.get("/", (req, res) => {
-  res.json({ status: "Sanara backend running" });
+  res.json({
+    status: "Sanara 2.0 Backend Operational",
+    positioning: "Personal Situation Intelligence",
+    tagline: "Untangle what's on your mind.",
+  });
 });
 
 /* =========================
@@ -78,5 +86,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Sanara 2.0 Server running on http://localhost:${PORT}`);
 });

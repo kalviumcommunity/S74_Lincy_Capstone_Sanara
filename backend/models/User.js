@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      default: "User",
+      trim: true,
+    },
     email: {
       type: String,
       required: true,
@@ -29,6 +34,12 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
       default: null,
+    },
+
+    preferences: {
+      theme: { type: String, default: "light" },
+      aiPrivacy: { type: Boolean, default: true },
+      notifications: { type: Boolean, default: true },
     },
   },
   {

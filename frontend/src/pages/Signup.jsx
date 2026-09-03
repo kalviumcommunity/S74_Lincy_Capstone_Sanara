@@ -1,170 +1,150 @@
-import { useState } from "react";
-import { GoogleLogin } from "@react-oauth/google";
-import { googleLogin, signup } from "../services/auth";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { ArrowRight, Eye, EyeOff, Lock, Mail, User, ShieldCheck } from "lucide-react";
+import SkyBackground from "../components/SkyBackground";
+import { motion } from "framer-motion";
 
 export default function Signup() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
   const navigate = useNavigate();
 
-  // EMAIL SIGNUP
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      await signup({ email, password });
-      navigate("/dashboard");
-    } catch (err) {
-      const msg = err.response?.data?.error || "Registration failed. Please try again.";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleSuccess = async (response) => {
-    setError("");
     setLoading(true);
     try {
-      if (!response?.credential) {
-        throw new Error("Missing Google credential");
-      }
-
-      await googleLogin(response.credential);
-      navigate("/dashboard");
+      await register(name, email, password);
+      navigate("/");
     } catch (err) {
-      const msg = err.response?.data?.error || "Google authentication failed";
-      setError(msg);
+      setError(err.response?.data?.error || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F3EE] flex flex-col">
-      {/* Brand */}
-      <header className="px-10 py-6 text-lg font-medium text-[#3F4F46] tracking-wide">
-        <Link to="/" className="hover:opacity-80 transition">
-          Sanara
-        </Link>
-      </header>
+    <div className="min-h-screen flex flex-col justify-center items-center p-5 sm:p-8 relative selection:bg-sky-100 selection:text-sky-900">
+      <SkyBackground />
 
-      <main className="flex flex-1 items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md bg-white rounded-[32px] border border-[#E5DED5] p-8 md:p-10 shadow-sm">
-          <h1 className="text-3xl font-serif text-[#2F3E35] text-center mb-3">
-            Create your space
-          </h1>
-
-          <p className="text-center text-sm text-[#7B877E] mb-6 leading-relaxed">
-            A quiet place to reflect, write, and understand yourself better.
-          </p>
-
-          {/* INLINE ERROR ALERT */}
-          {error && (
-            <div className="mb-6 p-4 rounded-2xl bg-[#FDF2F2] border border-[#F87171]/20 flex items-start gap-3 text-red-700 text-sm animate-fadeIn">
-              <AlertCircle size={18} className="shrink-0 mt-0.5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {/* GOOGLE SIGNUP */}
-          <div className="mb-3 flex justify-center">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => setError("Google Sign-In was cancelled or failed")}
-              theme="outline"
-              size="large"
-              width={320}
-              shape="pill"
-            />
-          </div>
-          <p className="text-xs text-center text-[#8A948D] mb-6">
-            Signing up with Google sets up your account instantly
-          </p>
-
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex-1 h-px bg-[#E3E0DA]" />
-            <span className="text-xs text-[#8A948D] uppercase tracking-wider">
-              or sign up with email
-            </span>
-            <div className="flex-1 h-px bg-[#E3E0DA]" />
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-md"
+      >
+        <div className="sky-card overflow-hidden shadow-2xl border-sky-100/80 bg-white">
+          {/* Header */}
+          <div className="px-8 pt-8 pb-7 text-center space-y-1.5 border-b border-sky-100 bg-gradient-to-b from-sky-50/60 to-white">
+            <h1 className="font-serif text-3xl font-medium tracking-tight text-slate-800">
+              SANARA
+            </h1>
+            <p className="eyebrow-xs text-sky-700 tracking-widest text-[10px]">
+              PERSONAL SITUATION INTELLIGENCE
+            </p>
+            <p className="font-serif italic text-sm text-slate-600 pt-1">
+              "Create your private thinking space."
+            </p>
           </div>
 
-          {/* EMAIL SIGNUP */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <input
-                type="email"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-                className="w-full px-5 py-3 rounded-2xl bg-[#F6F3EE] border border-[#E3E0DA] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C8A78] disabled:opacity-60 transition"
-              />
-            </div>
-
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password (minimum 6 characters)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                disabled={loading}
-                className="w-full px-5 py-3 pr-12 rounded-2xl bg-[#F6F3EE] border border-[#E3E0DA] text-sm focus:outline-none focus:ring-2 focus:ring-[#6C8A78] disabled:opacity-60 transition"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A948D] hover:text-[#2F3E35] transition"
-                title={showPassword ? "Hide password" : "Show password"}
+          {/* Form */}
+          <div className="p-8 space-y-5">
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-3.5 rounded-xl text-xs bg-red-50 text-red-700 border border-red-200"
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                {error}
+              </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-sky-600" /> Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your preferred name"
+                  className="input-sky"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-sky-600" /> Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@domain.com"
+                  className="input-sky"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-sky-600" /> Password
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="input-sky pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-1"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-sky-primary w-full justify-center py-3.5 mt-3 group"
+              >
+                <span>{loading ? "Creating your space..." : "Create my space"}</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
-            </div>
+            </form>
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-4 bg-[#5F7F6B] hover:bg-[#4F6F5B] active:bg-[#3F5F4B] text-white py-3 rounded-full text-sm font-medium tracking-wide transition flex items-center justify-center gap-2 disabled:opacity-60 shadow-sm"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Creating space…</span>
-                </>
-              ) : (
-                "Begin journaling"
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-sm text-[#6F7C74] mt-8">
-            Already have a space?{" "}
+          {/* Footer */}
+          <div className="px-8 py-4 text-center text-xs border-t border-sky-100 bg-sky-50/40 text-slate-600 flex items-center justify-between">
+            <span>Already have an account?</span>
             <Link
               to="/login"
-              className="text-[#5F7F6B] font-medium hover:underline"
+              className="font-semibold text-sky-700 hover:text-sky-900 hover:underline inline-flex items-center gap-1"
             >
-              Log in
+              Sign in →
             </Link>
-          </p>
+          </div>
         </div>
-      </main>
+      </motion.div>
+
+      <div className="relative z-10 mt-6 flex items-center gap-1.5 text-xs text-slate-500">
+        <ShieldCheck className="w-4 h-4 text-sky-600" />
+        <span>Your thoughts are private by default</span>
+      </div>
     </div>
   );
 }

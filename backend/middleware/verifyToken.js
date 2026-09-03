@@ -10,7 +10,8 @@ module.exports = function (req, res, next) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET || "sanara_jwt_secret_2026";
+    const decoded = jwt.verify(token, secret);
 
     // 🔒 normalize user object
     req.user = {
