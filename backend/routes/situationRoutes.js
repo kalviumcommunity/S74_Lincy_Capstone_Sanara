@@ -153,53 +153,176 @@ router.get("/map/data", verifyToken, async (req, res) => {
 
     const situations = await Situation.find({ userId }).sort({ createdAt: -1 });
     const threads = await Thread.find({ userId });
+    const decisions = await Decision.find({ userId });
     const outcomes = await Outcome.find({ userId });
 
     const nodes = [
-      { id: "user", label: "ME", type: "root", category: "User" }
+      {
+        id: "user",
+        label: "ME",
+        type: "root",
+        category: "User",
+        appearances: situations.length,
+        summary: "Center of your thinking universe",
+      },
     ];
     const links = [];
+    const linkSet = new Set();
 
-    // Group situations by main theme
-    const themeMap = {};
-
-    situations.forEach((sit) => {
-      const primaryTheme = sit.themes && sit.themes.length > 0 ? sit.themes[0] : "General";
-      if (!themeMap[primaryTheme]) {
-        themeMap[primaryTheme] = [];
-        const themeId = `theme_${primaryTheme.replace(/\s+/g, "_")}`;
-        nodes.push({ id: themeId, label: primaryTheme, type: "theme", category: "Theme" });
-        links.push({ source: "user", target: themeId, label: "theme" });
+    const addLink = (source, target, label = "connected") => {
+      const linkKey = `${source}->${target}`;
+      const revKey = `${target}->${source}`;
+      if (source !== target && !linkSet.has(linkKey) && !linkSet.has(revKey)) {
+        linkSet.add(linkKey);
+        links.push({ source, target, label });
       }
+    };
 
+    // Track unique themes & emotions across situations
+    const themeMap = {}; // themeName -> { id, count, sitIds: [] }
+    const emotionMap = {}; // emoName -> { id, count, sitIds: [] }
+
+    // First pass: aggregate themes & emotions
+    situations.forEach((sit) => {
+      const themes = (sit.themes || []).filter(Boolean);
+      if (themes.length === 0) themes.push("General");
+
+      themes.forEach((tName) => {
+        const themeId = `theme_${tName.toLowerCase().replace(/[^a-z0-0]/g, "_")}`;
+        if (!themeMap[tName]) {
+          themeMap[tName] = { id: themeId, name: tName, count: 0, sitIds: [] };
+        }
+        themeMap[tName].count += 1;
+        themeMap[tName].sitIds.push(sit._id.toString());
+      });
+
+      (sit.emotions || []).filter(Boolean).forEach((eName) => {
+        const emoId = `emo_${eName.toLowerCase().replace(/[^a-z0-0]/g, "_")}`;
+        if (!emotionMap[eName]) {
+          emotionMap[eName] = { id: emoId, name: eName, count: 0, sitIds: [] };
+        }
+        emotionMap[eName].count += 1;
+        emotionMap[eName].sitIds.push(sit._id.toString());
+      });
+    });
+
+    // Create theme nodes & link to ME
+    Object.values(themeMap).forEach((t) => {
+      nodes.push({
+        id: t.id,
+        label: t.name,
+        type: "theme",
+        category: "Theme",
+        appearances: t.count,
+        summary: `Theme appearing in ${t.count} situation${t.count === 1 ? "" : "s"}`,
+      });
+      addLink("user", t.id, "theme");
+    });
+
+    // Create emotion nodes
+    Object.values(emotionMap).forEach((e) => {
+      nodes.push({
+        id: e.id,
+        label: e.name,
+        type: "emotion",
+        category: "Emotion",
+        appearances: e.count,
+        summary: `Emotion experienced in ${e.count} situation${e.count === 1 ? "" : "s"}`,
+      });
+    });
+
+    // Create situation nodes, decision nodes, outcome nodes & connects
+    situations.forEach((sit) => {
       const sitNodeId = `sit_${sit._id}`;
+      const primaryTheme = sit.themes && sit.themes.length > 0 ? sit.themes[0] : "General";
+
       nodes.push({
         id: sitNodeId,
         label: sit.title,
         type: "situation",
         status: sit.status,
-        summary: sit.summary,
+        summary: sit.summary || "Recorded personal situation",
         createdAt: sit.createdAt,
-        emotions: sit.emotions,
+        emotions: sit.emotions || [],
+        themes: sit.themes || [primaryTheme],
         category: primaryTheme,
+        appearances: 1,
       });
 
-      const themeId = `theme_${primaryTheme.replace(/\s+/g, "_")}`;
-      links.push({ source: themeId, target: sitNodeId, label: "situation" });
-
-      // Add emotion nodes
-      (sit.emotions || []).forEach((emo) => {
-        const emoId = `emo_${sit._id}_${emo.replace(/\s+/g, "_")}`;
-        nodes.push({ id: emoId, label: emo, type: "emotion", category: "Emotion" });
-        links.push({ source: sitNodeId, target: emoId, label: "emotion" });
+      // Link situation to its themes
+      (sit.themes || [primaryTheme]).forEach((tName) => {
+        if (themeMap[tName]) {
+          addLink(themeMap[tName].id, sitNodeId, "situation");
+        }
       });
 
-      // Check for outcome
-      const outcome = outcomes.find((o) => o.situationId.toString() === sit._id.toString());
-      if (outcome) {
-        const outId = `out_${sit._id}`;
-        nodes.push({ id: outId, label: outcome.learned || "Outcome Stored", type: "outcome", category: "Outcome" });
-        links.push({ source: sitNodeId, target: outId, label: "outcome" });
+      // Link situation to its emotions
+      (sit.emotions || []).forEach((eName) => {
+        if (emotionMap[eName]) {
+          addLink(sitNodeId, emotionMap[eName].id, "emotion");
+        }
+      });
+
+      // Check for Decision
+      const dec = decisions.find((d) => d.situationId.toString() === sit._id.toString());
+      if (dec) {
+        const decId = `dec_${sit._id}`;
+        nodes.push({
+          id: decId,
+          label: dec.chosenOption || "Decision Made",
+          type: "decision",
+          category: "Decision",
+          summary: dec.reasoning || "Deliberated decision path",
+          createdAt: dec.createdAt,
+          appearances: 1,
+        });
+        addLink(sitNodeId, decId, "decision");
+
+        // Outcome link to Decision
+        const outcome = outcomes.find((o) => o.situationId.toString() === sit._id.toString());
+        if (outcome) {
+          const outId = `out_${sit._id}`;
+          nodes.push({
+            id: outId,
+            label: outcome.learned || "Outcome Stored",
+            type: "outcome",
+            category: "Outcome",
+            summary: outcome.actualResult || "Reflected outcome & takeaway",
+            createdAt: outcome.createdAt,
+            appearances: 1,
+          });
+          addLink(decId, outId, "outcome");
+        }
+      } else {
+        // Direct Outcome link if no decision record
+        const outcome = outcomes.find((o) => o.situationId.toString() === sit._id.toString());
+        if (outcome) {
+          const outId = `out_${sit._id}`;
+          nodes.push({
+            id: outId,
+            label: outcome.learned || "Outcome Stored",
+            type: "outcome",
+            category: "Outcome",
+            summary: outcome.actualResult || "Reflected outcome & takeaway",
+            createdAt: outcome.createdAt,
+            appearances: 1,
+          });
+          addLink(sitNodeId, outId, "outcome");
+        }
+      }
+    });
+
+    // Cross-link co-occurring themes
+    situations.forEach((sit) => {
+      const sitThemes = (sit.themes || []).filter(Boolean);
+      for (let i = 0; i < sitThemes.length; i++) {
+        for (let j = i + 1; j < sitThemes.length; j++) {
+          const t1 = themeMap[sitThemes[i]];
+          const t2 = themeMap[sitThemes[j]];
+          if (t1 && t2) {
+            addLink(t1.id, t2.id, "co-theme");
+          }
+        }
       }
     });
 
